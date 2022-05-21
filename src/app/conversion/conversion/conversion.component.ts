@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, map, Observable } from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged, from, map, Observable, of, Subject, switchMap, tap, UnaryFunction } from 'rxjs';
 import { GenerateRateQuoteModel, GenerateRateQuotePayloadModel } from 'src/app/models';
 import { ConversionService } from 'src/app/services';
 
@@ -16,11 +16,12 @@ export class ConversionComponent implements OnInit {
     conversionForm: FormGroup
     sentAmount$: Observable<number>;
     receivedAmount$: Observable<number>;
+    loading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
     constructor(private _conversionService: ConversionService, private _formBuilder: FormBuilder) {
         this.conversionForm = this._formBuilder.group({
-            sentAmount: [null, Validators.required],
-            receivedAmount: [null, Validators.required]
+            sentAmount: [null, Validators.compose([Validators.required, Validators.min(0)])],
+            receivedAmount: [null, Validators.compose([Validators.required, Validators.min(0)])]
         });
 
         this.sentAmount$ = this.conversionForm.controls['sentAmount'].valueChanges.pipe(map(x => +x));
@@ -28,31 +29,40 @@ export class ConversionComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.sentAmount$.pipe(debounceTime(500), distinctUntilChanged()).subscribe(ret => {
-            this.convertSentValue(ret)
-        });
-
-        this.receivedAmount$.pipe(debounceTime(500), distinctUntilChanged()).subscribe(ret => {
-            this.convertReceivedValue(ret)
-        });
+        this.listenSentAmountChange().subscribe()
+        this.listenReceivedAmountChange().subscribe()
     }
 
-    convertSentValue = (value: number) => {
-        const obj = new GenerateRateQuoteModel(this.conversionForm.value.sentAmount, this.conversionForm.value.receivedAmount)
-        this._conversionService
-            .convertSentValue(value)
-            .subscribe((quotationPayload: GenerateRateQuotePayloadModel) => {
-                this.conversionForm.patchValue({ receivedAmount: quotationPayload.receivedAmount }, { emitEvent: false });
-            });
+    private listenSentAmountChange() {
+        return this.sentAmount$.pipe(
+            distinctUntilChanged(),
+            debounceTime(500),
+            tap(() => this.loading$.next(true)),
+            switchMap(value => this._conversionService.convertSentValue(value)),
+            map((response: GenerateRateQuotePayloadModel) => response.sentAmount),
+            tap((response: string) => this.patchRecievedAmountWithoutEmit(response)),
+            tap(() => this.loading$.next(false)),
+        );
     }
 
-    convertReceivedValue = (value: number) => {
-        const obj = new GenerateRateQuoteModel(this.conversionForm.value.sentAmount, this.conversionForm.value.receivedAmount)
-        this._conversionService
-            .convertReceivedValue(value)
-            .subscribe((quotationPayload: GenerateRateQuotePayloadModel) => {
-                this.conversionForm.patchValue({ sentAmount: quotationPayload.sentAmount }, { emitEvent: false })
-            });
+    private listenReceivedAmountChange() {
+        return this.receivedAmount$.pipe(
+            distinctUntilChanged(),
+            debounceTime(500),
+            tap(() => this.loading$.next(true)),
+            switchMap(value => this._conversionService.convertReceivedValue(value)),
+            map((response: GenerateRateQuotePayloadModel) => response.receivedAmount),
+            tap((response: string) => this.patchSentAmountWithoutEmit(response)),
+            tap(() => this.loading$.next(false)),
+        );
     }
 
+    private patchRecievedAmountWithoutEmit(sentAmount: string) {
+        this.conversionForm.patchValue({ receivedAmount: sentAmount }, { emitEvent: false })
+    }
+
+    private patchSentAmountWithoutEmit(receivedAmount: string) {
+        this.conversionForm.patchValue({ sentAmount: receivedAmount }, { emitEvent: false })
+    }
 }
+
