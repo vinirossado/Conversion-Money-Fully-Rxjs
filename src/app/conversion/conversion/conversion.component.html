@@ -10,10 +10,11 @@
                         <div class="col-2 align-self-center text-center transition-all">
                             <ng-container [ngSwitch]="loading$ | async">
 
-                                <div class="spinner-grow spinner-color" *ngSwitchCase="true" role="status">
+                                <div class="spinner-grow text-primary" *ngSwitchCase="true" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <img *ngSwitchDefault  class="img-fluid" height="24" src="/assets/icons/swap-vertical-bold.svg">
+                                <img *ngSwitchDefault class="img-fluid" height="24"
+                                    src="/assets/icons/swap-vertical-bold.svg">
                             </ng-container>
                         </div>
 
@@ -29,7 +30,7 @@
                                         <label for="sendId">You send exactly</label>
                                     </div>
 
-                                    <span class="input-group-text">
+                                    <span class="input-group-text btn-primary ">
                                         <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
                                         <span id="inputGroup-sizing-lg">EUR </span>
                                     </span>
@@ -45,7 +46,7 @@
                                         <label for="recipientId">Recipient gets</label>
                                     </div>
 
-                                    <span class="input-group-text">
+                                    <span class="input-group-text btn-primary">
 
                                         <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
                                         <span id="inputGroup-sizing-lg">USD</span>
