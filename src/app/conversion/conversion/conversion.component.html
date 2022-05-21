@@ -1,0 +1,35 @@
+<div class="container d-flex h-100">
+    <div class="row align-self-center w-100">
+        <form [formGroup]="conversionForm">
+            <div class="col-12 d-grid gap-3 place-items-center">
+                <div class="col-4">
+                    <div class="input-group input-group-lg">
+                        <input type="text" formControlName="sentAmount" (blur)="convert()" class="form-control"
+                            placeholder="You send" inputmode="decimal" aria-label="Sizing example input"
+                            aria-describedby="inputGroup-sizing-lg">
+                        <span class="input-group-text">
+
+                            <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
+                            <span id="inputGroup-sizing-lg">EUR </span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <div class="input-group input-group-lg">
+                        <input type="text" class="form-control" formControlName="receivedAmount"
+                            placeholder="Recipient gets exacty" inputmode="decimal" aria-label="Sizing example input"
+                            aria-describedby="inputGroup-sizing-lg">
+                        <span class="input-group-text">
+
+                            <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
+                            <span id="inputGroup-sizing-lg">USD</span>
+                        </span>
+                    </div>
+                </div>
+
+
+            </div>
+        </form>
+    </div>
+</div>
