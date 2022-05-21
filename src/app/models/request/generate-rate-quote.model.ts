@@ -1,8 +1,10 @@
-export class GenerateRateQuoteModel {
-    sentAmount: number = 0;
-    receivedAmount: number = 0;
+import { Optional } from "@angular/core";
 
-    constructor(sentAmount: number, receivedAmount: number) {
+export class GenerateRateQuoteModel {
+    sentAmount: null | number;
+    receivedAmount: null | number;
+
+    constructor(sentAmount: number | null, receivedAmount: number | null) {
         this.sentAmount = sentAmount;
         this.receivedAmount = receivedAmount;
     }
