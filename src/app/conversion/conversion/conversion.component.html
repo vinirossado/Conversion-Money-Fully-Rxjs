@@ -1,35 +1,65 @@
-<div class="container d-flex h-100">
+<div class="container-fluid d-flex w-100 vh-100" style="background-color: #f4f8fa;">
     <div class="row align-self-center w-100">
-        <form [formGroup]="conversionForm">
-            <div class="col-12 d-grid gap-3 place-items-center">
-                <div class="col-4">
-                    <div class="input-group input-group-lg">
-                        <input type="text" formControlName="sentAmount" class="form-control"
-                            placeholder="You send" inputmode="decimal" aria-label="Sizing example input"
-                            aria-describedby="inputGroup-sizing-lg">
-                        <span class="input-group-text">
 
-                            <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
-                            <span id="inputGroup-sizing-lg">EUR </span>
-                        </span>
-                    </div>
+        <div class="card w-25 mx-auto">
+            <div class="col-12">
+                <div class="card-body pb-5">
+                    <img class="img-fluid" src="/assets/icons/wallet.svg">
+                    <h4 class="text-center mb-4">Money conversion</h4>
+                    <form class="row" [formGroup]="conversionForm">
+                        <div class="col-2 align-self-center text-center transition-all">
+                            <ng-container [ngSwitch]="loading$ | async">
+
+                                <div class="spinner-grow spinner-color" *ngSwitchCase="true" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <img *ngSwitchDefault  class="img-fluid" height="24" src="/assets/icons/swap-vertical-bold.svg">
+                            </ng-container>
+                        </div>
+
+
+                        <div class="col-10">
+
+                            <div class="d-grid gap-3 justify-content-center">
+                                <div class="input-group has-validation input-group-lg">
+
+                                    <div class="form-floating">
+                                        <input type="text" inputmode="decimal" placeholder="100"
+                                            formControlName="sentAmount" class="form-control" id="sendId">
+                                        <label for="sendId">You send exactly</label>
+                                    </div>
+
+                                    <span class="input-group-text">
+                                        <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
+                                        <span id="inputGroup-sizing-lg">EUR </span>
+                                    </span>
+
+                                    <span class="invalid-feedback">Your input is invalid</span>
+                                </div>
+
+                                <div class="input-group has-validation input-group-lg">
+
+                                    <div class="form-floating">
+                                        <input type="text" inputmode="decimal" placeholder="100"
+                                            formControlName="receivedAmount" class="form-control" id="recipientId">
+                                        <label for="recipientId">Recipient gets</label>
+                                    </div>
+
+                                    <span class="input-group-text">
+
+                                        <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
+                                        <span id="inputGroup-sizing-lg">USD</span>
+                                    </span>
+                                    <span class="invalid-feedback">Your input is invalid</span>
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </form>
                 </div>
-
-                <div class="col-4">
-                    <div class="input-group input-group-lg">
-                        <input type="text" class="form-control" formControlName="receivedAmount"
-                            placeholder="Recipient gets exacty" inputmode="decimal" aria-label="Sizing example input"
-                            aria-describedby="inputGroup-sizing-lg">
-                        <span class="input-group-text">
-
-                            <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
-                            <span id="inputGroup-sizing-lg">USD</span>
-                        </span>
-                    </div>
-                </div>
-
-
             </div>
-        </form>
+        </div>
     </div>
 </div>
