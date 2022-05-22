@@ -6,19 +6,19 @@ import { CommonModule } from '@angular/common';
 import { NgxCurrencyModule } from 'ngx-currency';
 
 @NgModule({
-  declarations: [
-    ConversionComponent
-  ],
-  imports: [
-    ReactiveFormsModule,
-    FormsModule,
-    CommonModule,
-    NgxCurrencyModule
+    declarations: [
+        ConversionComponent,
+    ],
+    imports: [
+        ReactiveFormsModule,
+        FormsModule,
+        CommonModule,
+        NgxCurrencyModule
 
 
-  ],
-  providers: [ConversionService],
-  exports: [ConversionComponent]
+    ],
+    providers: [ConversionService],
+    exports: [ConversionComponent]
 
 })
 export class ConversionModule { }

@@ -32,6 +32,7 @@ export const customCurrencyMaskConfig: CurrencyMaskConfig = {
 
     ],
     providers: [],
+    exports:[],
     bootstrap: [AppComponent],
 })
 export class AppModule { }

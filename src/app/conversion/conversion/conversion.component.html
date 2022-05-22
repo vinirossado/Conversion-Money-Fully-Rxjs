@@ -40,52 +40,35 @@
 
                             <div class="d-grid gap-3 justify-content-center">
 
-                                <div class="input-group has-validation input-group-lg">
-                                    <div class="row row-col-12">
-                                        <div>
+                                <div class="form-floating">
+                                    <input type="text" currencyMask inputmode="decimal" placeholder="100"
+                                        formControlName="sentAmount" class="form-control" id="sentId">
+                                    <label for="sentId">You send exactly</label>
+                                    <span class="input-group-text btn-primary">
 
-                                            <div class="form-floating">
-                                                <input type="text" currencyMask inputmode="decimal" placeholder="100"
-                                                    formControlName="sentAmount" class="form-control" id="sendId">
-                                                <label for="sendId">You send exactly</label>
-                                            </div>
-                                        </div>
+                                        <img class="pe-2" height="24px" width="41px" src="../assets/icons/eur.webp">
+                                        <span id="inputGroup-sizing-lg">EUR</span>
+                                    </span>
+                                    <span class="invalid-feedback">Your input is invalid</span>
 
-                                        <div>
-
-                                            <span class="input-group-text btn-primary ">
-                                                <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
-                                                <span id="inputGroup-sizing-lg">EUR </span>
-                                            </span>
-                                        </div>
-
-                                        <span class="invalid-feedback">Your input is invalid</span>
-                                    </div>
                                 </div>
 
                                 <div class="input-group has-validation input-group-lg">
-                                    <div class="row row-col-12">
-                                        <div>
 
-                                            <div class="form-floating">
-                                                <input type="text" [options]="{ prefix: '$ '}" currencyMask
-                                                    inputmode="decimal" placeholder="100"
-                                                    formControlName="receivedAmount" class="form-control"
-                                                    id="recipientId">
-                                                <label for="recipientId">Recipient gets</label>
-                                            </div>
-                                        </div>
-                                        <div>
+                                    <div class="form-floating">
+                                        <input type="text" [options]="{ prefix: '$ '}" currencyMask inputmode="decimal"
+                                            placeholder="100" formControlName="receivedAmount" class="form-control"
+                                            id="recipientId">
+                                        <label for="recipientId">Recipient gets</label>
+                                        <span class="input-group-text btn-primary">
 
-                                            <span class="input-group-text btn-primary">
+                                            <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
+                                            <span id="inputGroup-sizing-lg">USD</span>
+                                        </span>
+                                        <span class="invalid-feedback">Your input is invalid</span>
 
-                                                <img class="pe-2" height="24px" width="41px"
-                                                    src="../assets/icons/usd.webp">
-                                                <span id="inputGroup-sizing-lg">USD</span>
-                                            </span>
-                                            <span class="invalid-feedback">Your input is invalid</span>
-                                        </div>
                                     </div>
+
                                 </div>
 
                             </div>
