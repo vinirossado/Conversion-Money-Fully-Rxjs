@@ -12,7 +12,7 @@ import { ConversionService } from 'src/app/services';
 
 })
 export class ConversionComponent implements OnInit {
-
+    private static DELAY = 500;
     conversionForm: FormGroup;
     sentAmount$: Observable<number>;
     receivedAmount$: Observable<number>;
@@ -39,7 +39,7 @@ export class ConversionComponent implements OnInit {
     private listenSentAmountChange() {
         return this.sentAmount$.pipe(
             distinctUntilChanged(),
-            debounceTime(500),
+            debounceTime(ConversionComponent.DELAY),
             switchMap(value => iif(() => this.conversionForm.controls['sentAmount'].valid, of(value), EMPTY)),
             tap(() => this.loading$.next(true)),
             switchMap(value => this._conversionService.convertSentValue(value)),
@@ -54,7 +54,7 @@ export class ConversionComponent implements OnInit {
     private listenReceivedAmountChange() {
         return this.receivedAmount$.pipe(
             distinctUntilChanged(),
-            debounceTime(500),
+            debounceTime(ConversionComponent.DELAY),
             switchMap(value => iif(() => this.conversionForm.controls['receivedAmount'].valid, of(value), EMPTY)),
             tap(() => this.loading$.next(true)),
             switchMap(value => this._conversionService.convertReceivedValue(value)),
