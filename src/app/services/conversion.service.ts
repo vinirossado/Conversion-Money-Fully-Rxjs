@@ -7,24 +7,15 @@ import { GenerateRateQuoteModel, GenerateRateQuotePayloadModel } from '../models
 @Injectable()
 export class ConversionService {
 
-    constructor(private _httpClient: HttpClient) {
-    }
+    constructor(private _httpClient: HttpClient) { }
 
     convertSentValue = (value: number): Observable<GenerateRateQuotePayloadModel> => {
-        let payload = new GenerateRateQuoteModel(value,null);
+        let payload = new GenerateRateQuoteModel(value, null);
         return this._httpClient.post<GenerateRateQuotePayloadModel>(`${environment.apiUrl}generate-rate-quote`, payload)
-        // .pipe(
-        //     retryWhen(genericRetryStrategy()),
-        //     catchError(error => of(error))
-        //   )
     }
 
     convertReceivedValue = (value: number): Observable<GenerateRateQuotePayloadModel> => {
         let payload = new GenerateRateQuoteModel(null, value);
         return this._httpClient.post<GenerateRateQuotePayloadModel>(`${environment.apiUrl}generate-rate-quote`, payload)
-        // .pipe(
-        //     retryWhen(genericRetryStrategy()),
-        //     catchError(error => of(error))
-        //   )
     }
 }
