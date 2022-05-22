@@ -3,6 +3,7 @@ import { ConversionService } from '../services';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConversionComponent } from './conversion/conversion.component';
 import { CommonModule } from '@angular/common';
+import { NgxCurrencyModule } from 'ngx-currency';
 
 @NgModule({
   declarations: [
@@ -11,7 +12,10 @@ import { CommonModule } from '@angular/common';
   imports: [
     ReactiveFormsModule,
     FormsModule,
-    CommonModule ,
+    CommonModule,
+    NgxCurrencyModule
+
+
   ],
   providers: [ConversionService],
   exports: [ConversionComponent]

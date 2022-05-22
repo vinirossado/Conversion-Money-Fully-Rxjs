@@ -1,15 +1,15 @@
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/mixins';
+@import url('https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css');
 
 input.ng-invalid.ng-dirty {
     @extend .is-invalid;
 }
 
-
 $custom-theme-colors: (
     'primary': #2e4369,
-    'secondary': #37517e,
+    'secondary': #2761c6,
     'light': #fff,
 );
 

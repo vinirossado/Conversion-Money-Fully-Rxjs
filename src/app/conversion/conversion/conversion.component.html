@@ -1,66 +1,101 @@
-<div class="container-fluid d-flex w-100 vh-100" style="background-color: #f4f8fa;">
-    <div class="row align-self-center w-100">
+<div class="container-fluid  justify-content-center d-flex w-md-100 vh-100" style="background-color: #f4f8fa;">
+    <div class="row align-self-center w-100 p-3 p-md-0">
 
-        <div class="card w-25 mx-auto">
-            <div class="col-12">
+        <div class="card  mx-auto">
+            <div class="col-12 col-md-6">
                 <div class="card-body pb-5">
-                    <img class="img-fluid" src="/assets/icons/wallet.svg">
+
+                    <img class="img-fluid" height="300" width="300" src="/assets/icons/wallet.svg">
                     <h4 class="text-center mb-4">Money conversion</h4>
                     <form class="row" [formGroup]="conversionForm">
-                        <div class="col-2 align-self-center text-center transition-all">
+
+                        <div class="col-12 col-md-2 pb-3 pb-md-0 align-self-center text-center transition-all">
                             <ng-container [ngSwitch]="loading$ | async">
 
                                 <div class="spinner-grow text-primary" *ngSwitchCase="true" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <img *ngSwitchDefault class="img-fluid" height="24"
-                                    src="/assets/icons/swap-vertical-bold.svg">
+
+
+                                <div *ngSwitchDefault>
+                                    <ng-container *ngIf="rate$ | async as rate else initial ">
+                                        <span class="fw-bold fs-5"
+                                            [ngClass]="trendDirectionUP  == true ? 'text-primary': 'text-danger'">
+                                            {{rate | number:'1.0-2'}}
+                                            <i [ngClass]="trendDirectionUP  == true ? 'mdi-trending-up': 'mdi-trending-down'"
+                                                class="img-fluid mdi"></i>
+                                        </span>
+                                    </ng-container>
+
+                                    <ng-template #initial>
+                                        <img class="img-fluid" height="24" src="/assets/icons/swap-vertical-bold.svg">
+                                    </ng-template>
+
+                                </div>
+
                             </ng-container>
                         </div>
 
-
-                        <div class="col-10">
+                        <div class="col-12 col-md-10">
 
                             <div class="d-grid gap-3 justify-content-center">
+
                                 <div class="input-group has-validation input-group-lg">
+                                    <div class="row row-col-12">
+                                        <div>
 
-                                    <div class="form-floating">
-                                        <input type="text" inputmode="decimal" placeholder="100"
-                                            formControlName="sentAmount" class="form-control" id="sendId">
-                                        <label for="sendId">You send exactly</label>
+                                            <div class="form-floating">
+                                                <input type="text" currencyMask inputmode="decimal" placeholder="100"
+                                                    formControlName="sentAmount" class="form-control" id="sendId">
+                                                <label for="sendId">You send exactly</label>
+                                            </div>
+                                        </div>
+
+                                        <div>
+
+                                            <span class="input-group-text btn-primary ">
+                                                <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
+                                                <span id="inputGroup-sizing-lg">EUR </span>
+                                            </span>
+                                        </div>
+
+                                        <span class="invalid-feedback">Your input is invalid</span>
                                     </div>
-
-                                    <span class="input-group-text btn-primary ">
-                                        <img class="pe-2" height="24px" src="../assets/icons/eur.webp">
-                                        <span id="inputGroup-sizing-lg">EUR </span>
-                                    </span>
-
-                                    <span class="invalid-feedback">Your input is invalid</span>
                                 </div>
 
                                 <div class="input-group has-validation input-group-lg">
+                                    <div class="row row-col-12">
+                                        <div>
 
-                                    <div class="form-floating">
-                                        <input type="text" inputmode="decimal" placeholder="100"
-                                            formControlName="receivedAmount" class="form-control" id="recipientId">
-                                        <label for="recipientId">Recipient gets</label>
+                                            <div class="form-floating">
+                                                <input type="text" [options]="{ prefix: '$ '}" currencyMask
+                                                    inputmode="decimal" placeholder="100"
+                                                    formControlName="receivedAmount" class="form-control"
+                                                    id="recipientId">
+                                                <label for="recipientId">Recipient gets</label>
+                                            </div>
+                                        </div>
+                                        <div>
+
+                                            <span class="input-group-text btn-primary">
+
+                                                <img class="pe-2" height="24px" width="41px"
+                                                    src="../assets/icons/usd.webp">
+                                                <span id="inputGroup-sizing-lg">USD</span>
+                                            </span>
+                                            <span class="invalid-feedback">Your input is invalid</span>
+                                        </div>
                                     </div>
-
-                                    <span class="input-group-text btn-primary">
-
-                                        <img class="pe-2" height="24px" width="41px" src="../assets/icons/usd.webp">
-                                        <span id="inputGroup-sizing-lg">USD</span>
-                                    </span>
-                                    <span class="invalid-feedback">Your input is invalid</span>
                                 </div>
-
 
                             </div>
+
                         </div>
 
                     </form>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
