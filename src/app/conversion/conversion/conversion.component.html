@@ -70,7 +70,11 @@
                                     </div>
 
                                 </div>
-
+                                <div *ngIf="expired$ | async">
+                                    <div class="alert alert-warning" role="alert">
+                                        Quotation expired
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
