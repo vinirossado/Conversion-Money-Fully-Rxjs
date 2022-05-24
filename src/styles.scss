@@ -3,6 +3,10 @@
 @import 'bootstrap/scss/mixins';
 @import url('https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css');
 
+body {
+    height: 100vh;
+}
+
 input.ng-invalid.ng-dirty {
     @extend .is-invalid;
 }
@@ -10,7 +14,8 @@ input.ng-invalid.ng-dirty {
 $custom-theme-colors: (
     'primary': #2e4369,
     'secondary': #2761c6,
-    'light': #fff,
+    'light': #f4f8fa,
+    'white': white,
 );
 
 $theme-colors: map-merge($theme-colors, $custom-theme-colors);
@@ -22,7 +27,11 @@ $utilities-text-colors: map-loop(
     '$key',
     'text'
 );
+
 $utilities-bg-colors: map-loop($utilities-colors, rgba-css-var, '$key', 'bg');
 
-@import 'bootstrap/scss/bootstrap';
+    .place-content-center{
+    place-content: center;
+}
 
+@import 'bootstrap/scss/bootstrap';
