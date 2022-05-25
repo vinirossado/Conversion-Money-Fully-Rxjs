@@ -3,12 +3,10 @@
 @import 'bootstrap/scss/mixins';
 @import url('https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css');
 
-body {
-    height: 100vh;
-}
-
 input.ng-invalid.ng-dirty {
     @extend .is-invalid;
+    padding-right: $input-btn-padding-x !important;
+    background-image: none !important;
 }
 
 $custom-theme-colors: (
@@ -30,8 +28,15 @@ $utilities-text-colors: map-loop(
 
 $utilities-bg-colors: map-loop($utilities-colors, rgba-css-var, '$key', 'bg');
 
-    .place-content-center{
+.place-content-center {
     place-content: center;
 }
 
+#app {
+    background-image: url('/assets/icons/wave.svg');
+    background-position: bottom;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
 @import 'bootstrap/scss/bootstrap';
+

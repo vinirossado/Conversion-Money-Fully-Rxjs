@@ -26,6 +26,7 @@ import {
 } from 'rxjs';
 import { ConversionStatus, ConversionModel, ConversionEnum } from 'src/app/models';
 import { QuotaModel } from 'src/app/models/quota.model';
+import { TrendingModel } from 'src/app/models/trending.model';
 import { ConversionService } from 'src/app/services';
 
 @Component({
@@ -49,8 +50,11 @@ export class ConversionComponent implements OnInit, OnDestroy {
     private refresh$ = new Subject<void>();
     private quota$ = new Subject<QuotaModel>();
 
-    rate$: Observable<string> = this.quota$.pipe(map(value => value.quota.rate));
-    trending$: Observable<boolean> = this.quota$.pipe(map(value => value.quota.rate), pairwise(), map(([current, previous]) => current < previous));
+    trending$: Observable<TrendingModel> =
+        this.quota$.pipe(map(value => value.quota.rate),
+            pairwise(),
+            map(([previous, current]) => new TrendingModel(current, previous < current)));
+
     appState$: Observable<ConversionStatus> = this.state$.asObservable();
 
     constructor(private _formBuilder: FormBuilder, private _conversionService: ConversionService) {
