@@ -1,7 +1,31 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    OnDestroy,
+    OnInit,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, debounceTime, delay, distinctUntilChanged, EMPTY, iif, map, Observable, of, repeat, retry, Subscription, switchMap, tap, timeout } from 'rxjs';
-import { GenerateRateQuotePayloadModel } from 'src/app/models';
+import {
+    BehaviorSubject,
+    Subject,
+    debounceTime,
+    filter,
+    delay,
+    merge,
+    distinctUntilChanged,
+    map,
+    Observable,
+    of,
+    switchMap,
+    tap,
+    pairwise,
+    Subscription,
+    catchError,
+    EMPTY,
+    OperatorFunction,
+} from 'rxjs';
+import { ConversionStatus, ConversionModel, ConversionEnum } from 'src/app/models';
+import { QuotaModel } from 'src/app/models/quota.model';
 import { ConversionService } from 'src/app/services';
 
 @Component({
@@ -9,92 +33,113 @@ import { ConversionService } from 'src/app/services';
     templateUrl: './conversion.component.html',
     styleUrls: ['./conversion.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-
 })
+
 export class ConversionComponent implements OnInit, OnDestroy {
-    private readonly DELAY: number = 500;
-    trendDirectionUP: boolean = false;
-    conversionForm: FormGroup;
+    // Constants
+    private static DELAY: number = 500;
+    private static DELAY_BEFORE_REFRESH = 3000;
 
-    sentAmount$: Observable<number>;
-    receivedAmount$: Observable<number>;
-    loading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-    rate$: BehaviorSubject<string> = new BehaviorSubject<string>('');
-    expired$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-    subscription: Subscription = new Subscription();
+    // Public variables
+    public conversionForm: FormGroup;
 
-    constructor(private _conversionService: ConversionService, private _formBuilder: FormBuilder) {
+    // Observables
+    private inputChanges$ = new BehaviorSubject<ConversionModel | null>(null);
+    private state$ = new BehaviorSubject<ConversionStatus>(ConversionStatus.idle);
+    private refresh$ = new Subject<void>();
+    private quota$ = new Subject<QuotaModel>();
+
+    rate$: Observable<string> = this.quota$.pipe(map(value => value.quota.rate));
+    trending$: Observable<boolean> = this.quota$.pipe(map(value => value.quota.rate), pairwise(), map(([current, previous]) => current < previous));
+    appState$: Observable<ConversionStatus> = this.state$.asObservable();
+
+    constructor(private _formBuilder: FormBuilder, private _conversionService: ConversionService) {
+
         this.conversionForm = this._formBuilder.group({
             sentAmount: [null, Validators.compose([Validators.required, Validators.min(0.01)])],
-            receivedAmount: [null, Validators.compose([Validators.required, Validators.min(0.01)])]
+            receivedAmount: [null, Validators.compose([Validators.required, Validators.min(0.01)])],
         });
 
-        this.sentAmount$ = this.conversionForm.controls['sentAmount'].valueChanges.pipe(map(x => +x));
-        this.receivedAmount$ = this.conversionForm.controls['receivedAmount'].valueChanges.pipe(map(x => +x));
+        const sentAmount = this.conversionForm.get('sentAmount')!.valueChanges.pipe(distinctUntilChanged(),
+            map((value) => new ConversionModel(value, ConversionEnum.send)));
+
+        const receivedAmount = this.conversionForm.get('receivedAmount')!.valueChanges.pipe(distinctUntilChanged(),
+            map((value) => new ConversionModel(+value, ConversionEnum.send)),
+        );
+
+        merge(sentAmount, receivedAmount).subscribe(this.inputChanges$);
     }
+
     ngOnDestroy(): void {
-        this.subscription.unsubscribe();
+        this.inputChanges$.complete();
+        this.refresh$.complete();
+        this.quota$.complete();
     }
 
-    ngOnInit() {
-        this.subscription.add(this.listenSentAmountChange().subscribe());
-        this.subscription.add(this.listenReceivedAmountChange().subscribe());
+    ngOnInit(): void {
+        merge(this.inputChanges$, this.refresh$)
+            .pipe(
+                map(() => this.inputChanges$.value),
+                filter((value) => !!value?.value),
+                debounceTime(ConversionComponent.DELAY),
+                tap(() => this.state$.next(ConversionStatus.loading)),
+                switchMap((value) => this.fetchQuotaFromApi(value!)),
+                catchError(() => this.handleError()),
+                tap(() => this.state$.next(ConversionStatus.loaded)),
+            )
+            .subscribe(this.quota$);
+
+        this.quota$
+            .pipe(
+                tap(() => this.state$.next(ConversionStatus.loaded)),
+                tap((quota) => this.updateFormFields(quota)),
+                switchMap((quota) => this.delayUntilExpires(quota)),
+                tap(() => this.state$.next(ConversionStatus.expired)),
+                delay(ConversionComponent.DELAY_BEFORE_REFRESH),
+                tap(() => this.refresh$.next()),
+            )
+            .subscribe();
     }
 
-    private listenSentAmountChange() {
-        return this.sentAmount$.pipe(
-            distinctUntilChanged(),
-            debounceTime(this.DELAY),
-            switchMap(value => iif(() => this.conversionForm.controls['sentAmount'].valid, of(value), EMPTY)),
-            tap(() => this.loading$.next(true)),
-            tap(() => this.expired$.next(false)),
-            switchMap(value => this._conversionService.convertSentValue(value)),
-            tap((response: GenerateRateQuotePayloadModel) => this.updateRate(response.rate)),
-            tap((response: GenerateRateQuotePayloadModel) => this.patchReceivedAmountWithoutEmit(response.receivedAmount)),
-            tap(() => this.loading$.next(false)),
-            switchMap((response: GenerateRateQuotePayloadModel) => this.addQuotationDelay(response)),
-            tap(() => this.expired$.next(true)),
-            tap(() => console.log('finalizou')),
-
-        );
+    private fetchQuotaFromApi(conversion: ConversionModel): Observable<QuotaModel> {
+        switch (conversion.type) {
+            case ConversionEnum.send:
+                return this._conversionService.convertSentValue(conversion.value);
+            case ConversionEnum.receive:
+                return this._conversionService.convertReceivedValue(conversion.value);
+        }
     }
 
-    private listenReceivedAmountChange() {
-        return this.receivedAmount$.pipe(
-            distinctUntilChanged(),
-            debounceTime(this.DELAY),
-            switchMap(value => iif(() => this.conversionForm.controls['receivedAmount'].valid, of(value), EMPTY)),
-            tap(() => this.expired$.next(false)),
-            tap(() => this.loading$.next(true)),
-            switchMap(value => this._conversionService.convertReceivedValue(value)),
-            tap((response: GenerateRateQuotePayloadModel) => this.updateRate(response.rate)),
-            tap((response: GenerateRateQuotePayloadModel) => this.patchSentAmountWithoutEmit(response.sentAmount)),
-            tap(() => this.loading$.next(false)),
-            switchMap((response: GenerateRateQuotePayloadModel) => this.addQuotationDelay(response)),
-            tap(() => this.expired$.next(true)),
-            tap(() => console.log('finalizou')),
-        );
+    private updateFormFields(model: QuotaModel) {
+        switch (model.conversionSource) {
+            case ConversionEnum.send:
+                return this.patchReceivedAmountWithoutEmit(model.quota.receivedAmount);
+            case ConversionEnum.receive:
+                return this.patchSentAmountWithoutEmit(model.quota.sentAmount);
+        }
     }
 
-    private addQuotationDelay(value: GenerateRateQuotePayloadModel): Observable<GenerateRateQuotePayloadModel> {
-        const expirationDate = new Date(value.expiresAt);
-        const currentMilliseconds = new Date().getTime();
-        const expiration = expirationDate.getTime() - currentMilliseconds;
-        return of(value).pipe(delay(10000))
-
+    private delayUntilExpires(quota: QuotaModel): Observable<QuotaModel> {
+        let expirationTime = new Date(quota.quota!.expiresAt).getTime();
+        let currentTime = new Date().getTime();
+        let expirationDelay = expirationTime - currentTime;
+        return of(quota).pipe(delay(expirationDelay));
     }
 
-    private patchReceivedAmountWithoutEmit(sentAmount: string): void {
-        this.conversionForm.patchValue({ receivedAmount: sentAmount }, { emitEvent: false })
+    private patchReceivedAmountWithoutEmit(receivedAmount: string): void {
+        this.conversionForm.patchValue({ receivedAmount: receivedAmount }, { emitEvent: false })
     }
 
-    private patchSentAmountWithoutEmit(receivedAmount: string): void {
-        this.conversionForm.patchValue({ sentAmount: receivedAmount }, { emitEvent: false })
+    private patchSentAmountWithoutEmit(sentAmount: string): void {
+        this.conversionForm.patchValue({ sentAmount: sentAmount }, { emitEvent: false })
     }
 
-    private updateRate(rate: string): void {
-        this.trendDirectionUP = rate > this.rate$.value;
-        this.rate$.next(rate);
+    public get states(): typeof ConversionStatus {
+        return ConversionStatus;
+    }
+
+    private handleError(): Observable<QuotaModel> {
+        this.state$.next(ConversionStatus.error);
+        return EMPTY
     }
 }
-
