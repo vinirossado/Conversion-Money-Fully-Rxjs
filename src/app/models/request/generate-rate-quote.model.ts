@@ -1,5 +1,3 @@
-import { Optional } from "@angular/core";
-
 export class GenerateRateQuoteModel {
     sentAmount: null | number;
     receivedAmount: null | number;
