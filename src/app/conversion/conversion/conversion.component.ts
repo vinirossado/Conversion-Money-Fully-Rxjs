@@ -39,23 +39,23 @@ import { ConversionService } from 'src/app/services';
 export class ConversionComponent implements OnInit, OnDestroy {
     // Constants
     private static DELAY: number = 500;
-    private static DELAY_BEFORE_REFRESH = 3000;
+    private static DELAY_BEFORE_REFRESH: number = 3000;
 
     // Public variables
     public conversionForm: FormGroup;
 
     // Observables
-    private inputChanges$ = new BehaviorSubject<ConversionModel | null>(null);
-    private state$ = new BehaviorSubject<ConversionStatus>(ConversionStatus.idle);
-    private refresh$ = new Subject<void>();
-    private quota$ = new Subject<QuotaModel>();
+    private inputChanges$: BehaviorSubject<ConversionModel | null> = new BehaviorSubject<ConversionModel | null>(null);
+    private state$: BehaviorSubject<ConversionStatus> = new BehaviorSubject<ConversionStatus>(ConversionStatus.idle);
+    private refresh$: Subject<void> = new Subject<void>();
+    private quota$: Subject<QuotaModel> = new Subject<QuotaModel>();
 
+    appState$: Observable<ConversionStatus> = this.state$.asObservable();
     trending$: Observable<TrendingModel> =
         this.quota$.pipe(map(value => value.quota.rate),
             pairwise(),
             map(([previous, current]) => new TrendingModel(current, previous < current)));
 
-    appState$: Observable<ConversionStatus> = this.state$.asObservable();
 
     constructor(private _formBuilder: FormBuilder, private _conversionService: ConversionService) {
 
@@ -64,10 +64,10 @@ export class ConversionComponent implements OnInit, OnDestroy {
             receivedAmount: [null, Validators.compose([Validators.required, Validators.min(0.01)])],
         });
 
-        const sentAmount = this.conversionForm.get('sentAmount')!.valueChanges.pipe(distinctUntilChanged(),
+        const sentAmount: Observable<ConversionModel> = this.conversionForm.get('sentAmount')!.valueChanges.pipe(distinctUntilChanged(),
             map((value) => new ConversionModel(value, ConversionEnum.send)));
 
-        const receivedAmount = this.conversionForm.get('receivedAmount')!.valueChanges.pipe(distinctUntilChanged(),
+        const receivedAmount: Observable<ConversionModel> = this.conversionForm.get('receivedAmount')!.valueChanges.pipe(distinctUntilChanged(),
             map((value) => new ConversionModel(+value, ConversionEnum.send)),
         );
 
